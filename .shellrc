@@ -8,6 +8,9 @@ alias ll='ls -al --color'
 # 默认代理地址（可根据实际环境修改）
 _PROXY_DEFAULT_ADDR="http://127.0.0.1:7890"
 
+# 网络连通性检测超时时间（秒）
+_PROXY_TEST_TIMEOUT=3
+
 # 需要设置的代理环境变量列表（小写 + 大写，兼容不同工具的读取习惯）
 _PROXY_ENV_VARS=(http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY)
 
@@ -84,7 +87,7 @@ proxy_test() {
   # 发起请求，获取状态码和耗时
   local result
   result=$(curl -s -o /dev/null -w "%{http_code} %{time_total}" \
-    --connect-timeout "$timeout" "$target" 2>&1)
+    --connect-timeout "$timeout" "$target" 2>/dev/null)
   local exit_code=$?
 
   if [ $exit_code -ne 0 ]; then
@@ -155,18 +158,18 @@ proxy_info() {
 
     # 测试国内连通性（百度）
     local domestic
-    domestic=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 https://www.baidu.com 2>/dev/null)
-    if [ "$domestic" = "200" ]; then
-      echo "   国内网络（百度）：✅ 可达"
+    domestic=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout "$_PROXY_TEST_TIMEOUT" https://www.baidu.com 2>/dev/null)
+    if [[ "$domestic" =~ ^[23] ]]; then
+      echo "   国内网络（百度）：✅ 可达（HTTP $domestic）"
     else
       echo "   国内网络（百度）：❌ 不可达"
     fi
 
     # 测试国际连通性（Google）
     local international
-    international=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 https://www.google.com 2>/dev/null)
-    if [ "$international" = "200" ]; then
-      echo "   国际网络（Google）：✅ 可达"
+    international=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout "$_PROXY_TEST_TIMEOUT" https://www.google.com 2>/dev/null)
+    if [[ "$international" =~ ^[23] ]]; then
+      echo "   国际网络（Google）：✅ 可达（HTTP $international）"
     else
       echo "   国际网络（Google）：❌ 不可达"
     fi
