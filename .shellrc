@@ -8,17 +8,61 @@ alias ll='ls -al --color'
 # PROXY
 # ══════════════════════════════════════════════════════════════════════════════
 
+proxy_get_system_type() {
+    case "${OSTYPE:-}" in
+        darwin*)
+            printf '%s\n' "macos"
+            return
+            ;;
+        msys*|cygwin*|win32*|mingw*|MSYS*|CYGWIN*|MINGW*)
+            printf '%s\n' "windows"
+            return
+            ;;
+    esac
+
+    case "$(uname -s 2>/dev/null)" in
+        Darwin)
+            printf '%s\n' "macos"
+            ;;
+        MSYS*|CYGWIN*|MINGW*)
+            printf '%s\n' "windows"
+            ;;
+        *)
+            printf '%s\n' "default"
+            ;;
+    esac
+}
+
+proxy_set_ports() {
+    case "$(proxy_get_system_type)" in
+        macos)
+            proxy_http_port="${PROXY_HTTP_PORT_MACOS:-7890}"
+            proxy_socks_port="${PROXY_SOCKS_PORT_MACOS:-1080}"
+            ;;
+        windows)
+            proxy_http_port="${PROXY_HTTP_PORT_WINDOWS:-7890}"
+            proxy_socks_port="${PROXY_SOCKS_PORT_WINDOWS:-1080}"
+            ;;
+        *)
+            proxy_http_port="${PROXY_HTTP_PORT_DEFAULT:-7890}"
+            proxy_socks_port="${PROXY_SOCKS_PORT_DEFAULT:-1080}"
+            ;;
+    esac
+}
+
 proxy_on() {
-    export http_proxy="http://127.0.0.1:7890"
-    export https_proxy="http://127.0.0.1:7890"
-    export ftp_proxy="http://127.0.0.1:7890"
-    export all_proxy="socks5h://127.0.0.1:1080"
+    proxy_set_ports
+
+    export http_proxy="http://127.0.0.1:${proxy_http_port}"
+    export https_proxy="http://127.0.0.1:${proxy_http_port}"
+    export ftp_proxy="http://127.0.0.1:${proxy_http_port}"
+    export all_proxy="socks5h://127.0.0.1:${proxy_socks_port}"
     export no_proxy="localhost,127.0.0.1,::1"
 
-    export HTTP_PROXY="http://127.0.0.1:7890"
-    export HTTPS_PROXY="http://127.0.0.1:7890"
-    export FTP_PROXY="http://127.0.0.1:7890"
-    export ALL_PROXY="socks5h://127.0.0.1:1080"
+    export HTTP_PROXY="http://127.0.0.1:${proxy_http_port}"
+    export HTTPS_PROXY="http://127.0.0.1:${proxy_http_port}"
+    export FTP_PROXY="http://127.0.0.1:${proxy_http_port}"
+    export ALL_PROXY="socks5h://127.0.0.1:${proxy_socks_port}"
     export NO_PROXY="localhost,127.0.0.1,::1"
 }
 
@@ -37,7 +81,9 @@ proxy_off() {
 }
 
 proxy_test() {
+    :
 }
 
 proxy_info() {
+    :
 }
