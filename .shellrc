@@ -9,16 +9,26 @@ alias ll='ls -al --color'
 # ══════════════════════════════════════════════════════════════════════════════
 
 proxy_on() {
-    export http_proxy="http://127.0.0.1:7890"
-    export https_proxy="http://127.0.0.1:7890"
-    export ftp_proxy="http://127.0.0.1:7890"
-    export all_proxy="socks5h://127.0.0.1:1080"
+    local http_port socks5_port
+
+    if [ "$(uname -s)" = "Darwin" ]; then
+        http_port=7890
+        socks5_port=7891
+    else
+        http_port=10809
+        socks5_port=10808
+    fi
+
+    export http_proxy="http://127.0.0.1:${http_port}"
+    export https_proxy="http://127.0.0.1:${http_port}"
+    export ftp_proxy="http://127.0.0.1:${http_port}"
+    export all_proxy="socks5h://127.0.0.1:${socks5_port}"
     export no_proxy="localhost,127.0.0.1,::1"
 
-    export HTTP_PROXY="http://127.0.0.1:7890"
-    export HTTPS_PROXY="http://127.0.0.1:7890"
-    export FTP_PROXY="http://127.0.0.1:7890"
-    export ALL_PROXY="socks5h://127.0.0.1:1080"
+    export HTTP_PROXY="http://127.0.0.1:${http_port}"
+    export HTTPS_PROXY="http://127.0.0.1:${http_port}"
+    export FTP_PROXY="http://127.0.0.1:${http_port}"
+    export ALL_PROXY="socks5h://127.0.0.1:${socks5_port}"
     export NO_PROXY="localhost,127.0.0.1,::1"
 }
 
@@ -37,7 +47,9 @@ proxy_off() {
 }
 
 proxy_test() {
+    :
 }
 
 proxy_info() {
+    :
 }
