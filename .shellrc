@@ -19,8 +19,18 @@ proxy_off() {
 }
 
 proxy_test() {
-  echo "Testing proxy connectivity..."
-  curl -s -o /dev/null -w "HTTP Status: %{http_code}\nTime: %{time_total}s\n" https://www.google.com
+  local url="${1:-https://www.google.com}"
+  echo "Testing proxy connectivity to $url ..."
+  if ! command -v curl &>/dev/null; then
+    echo "Error: curl is not installed" >&2
+    return 1
+  fi
+  curl -s -o /dev/null -w "HTTP Status: %{http_code}\nTime: %{time_total}s\n" "$url"
+  local ret=$?
+  if [ $ret -ne 0 ]; then
+    echo "Error: curl failed with exit code $ret" >&2
+    return $ret
+  fi
 }
 
 proxy_info() {
