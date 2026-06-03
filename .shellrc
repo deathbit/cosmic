@@ -12,11 +12,9 @@ proxy_get_system_type() {
     case "${OSTYPE:-}" in
         darwin*)
             printf '%s\n' "macos"
-            return
             ;;
-        msys*|cygwin*|win32*|mingw*|MSYS*|CYGWIN*|MINGW*)
+        msys*|cygwin*|win32*|mingw*)
             printf '%s\n' "windows"
-            return
             ;;
     esac
 
