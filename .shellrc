@@ -1,179 +1,50 @@
 alias ll='ls -al --color'
 
-# ============================================================================
-# 代理（Proxy）相关函数
-# 用于快速开启/关闭/测试/查看当前 shell 的网络代理配置
-# ============================================================================
+# ══════════════════════════════════════════════════════════════════════════════
+# Proxy - 代理开启/关闭/测试
+# ══════════════════════════════════════════════════════════════════════════════
 
-# 默认代理地址（可根据实际环境修改）
-_PROXY_DEFAULT_ADDR="http://127.0.0.1:7890"
-
-# 网络连通性检测超时时间（秒）
-_PROXY_TEST_TIMEOUT=3
-
-# 需要设置的代理环境变量列表（小写 + 大写，兼容不同工具的读取习惯）
-_PROXY_ENV_VARS=(http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY)
-
-# ----------------------------------------------------------------------------
-# proxy_on [代理地址]
-# 开启代理：将所有代理环境变量设置为指定地址
-# 参数：可选，代理服务器地址，默认为 $_PROXY_DEFAULT_ADDR
-# 示例：proxy_on              # 使用默认地址
-#       proxy_on socks5://127.0.0.1:1080
-# ----------------------------------------------------------------------------
+# Proxy - 开启代理，支持 http/socks5，可选参数覆盖默认地址
 proxy_on() {
-  local addr="${1:-$_PROXY_DEFAULT_ADDR}"
-
-  for var in "${_PROXY_ENV_VARS[@]}"; do
-    export "$var=$addr"
-  done
-
-  echo "✅ 代理已开启，地址：$addr"
+    local addr="${1:-http://127.0.0.1:7890}"
+    export http_proxy="$addr" https_proxy="$addr" all_proxy="$addr"
+    export HTTP_PROXY="$addr" HTTPS_PROXY="$addr" ALL_PROXY="$addr"
+    echo "✅ 代理已开启: $addr"
 }
 
-# ----------------------------------------------------------------------------
-# proxy_off
-# 关闭代理：清除所有代理环境变量
-# ----------------------------------------------------------------------------
+# Proxy - 开启 socks5 代理
+proxy_socks5() {
+    proxy_on "${1:-socks5://127.0.0.1:7890}"
+}
+
+# Proxy - 关闭代理
 proxy_off() {
-  for var in "${_PROXY_ENV_VARS[@]}"; do
-    unset "$var"
-  done
-
-  echo "❌ 代理已关闭，所有代理环境变量已清除"
+    unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
+    echo "❌ 代理已关闭"
 }
 
-# ----------------------------------------------------------------------------
-# proxy_test [目标URL]
-# 测试代理连通性
-#
-# 测试原理：
-#   1. 使用 curl 向目标 URL 发起 HTTP(S) 请求
-#   2. 如果当前设置了代理环境变量，curl 会自动通过代理发起请求
-#   3. 如果未设置代理，curl 会直接连接目标服务器
-#   4. 通过对比"有代理"和"无代理"场景下能否访问目标，来判断代理是否正常工作
-#
-# 测试方法：
-#   - 默认目标为 https://www.google.com（国内通常无法直连，需要代理才能访问）
-#   - 设置 5 秒超时，避免长时间等待
-#   - 输出 HTTP 状态码和请求耗时，帮助判断连接质量
-#
-# 参数：可选，目标 URL，默认为 https://www.google.com
-# 示例：proxy_test
-#       proxy_test https://github.com
-# ----------------------------------------------------------------------------
+# Proxy - 设置不走代理的地址
+proxy_noproxy() {
+    local list="${1:-localhost,127.0.0.1,::1,10.*,192.168.*}"
+    export no_proxy="$list" NO_PROXY="$list"
+    echo "🚫 不走代理: $list"
+}
+
+# Proxy - 测试连通性
 proxy_test() {
-  local target="${1:-https://www.google.com}"
-  local timeout=5
-
-  # 检查 curl 是否可用
-  if ! command -v curl &>/dev/null; then
-    echo "❗ 错误：未找到 curl 命令，请先安装 curl" >&2
-    return 1
-  fi
-
-  echo "🔍 正在测试网络连通性..."
-  echo "   目标地址：$target"
-  echo "   超时时间：${timeout}s"
-
-  if [ -n "$http_proxy" ]; then
-    echo "   代理地址：$http_proxy"
-  else
-    echo "   代理状态：未设置（直连模式）"
-  fi
-
-  echo ""
-
-  # 发起请求，获取状态码和耗时
-  local result
-  result=$(curl -s -o /dev/null -w "%{http_code} %{time_total}" \
-    --connect-timeout "$timeout" "$target" 2>/dev/null)
-  local exit_code=$?
-
-  if [ $exit_code -ne 0 ]; then
-    echo "❌ 连接失败（curl 退出码：$exit_code）"
-    case $exit_code in
-      6)  echo "   原因：无法解析域名" ;;
-      7)  echo "   原因：无法连接到服务器" ;;
-      28) echo "   原因：连接超时" ;;
-      35) echo "   原因：SSL/TLS 握手失败" ;;
-      56) echo "   原因：接收数据失败" ;;
-      *)  echo "   原因：未知错误" ;;
-    esac
-    return $exit_code
-  fi
-
-  local http_code="${result%% *}"
-  local time_total="${result##* }"
-
-  echo "✅ 连接成功"
-  echo "   HTTP 状态码：$http_code"
-  echo "   响应耗时：${time_total}s"
+    local target="${1:-https://www.google.com}"
+    local result
+    result=$(curl -s -o /dev/null -w "%{http_code} %{time_total}s" --connect-timeout 5 "$target" 2>/dev/null)
+    local rc=$?
+    if [ $rc -eq 0 ]; then echo "✅ $target -> $result"
+    else echo "❌ $target -> 连接失败"; return 1; fi
 }
 
-# ----------------------------------------------------------------------------
-# proxy_info
-# 查看当前代理配置和网络状态
-# 提供完整的代理环境变量信息，并检测当前的网络可达性
-# ----------------------------------------------------------------------------
+# Proxy - 查看当前代理配置
 proxy_info() {
-  echo "📋 当前代理配置："
-  echo "────────────────────────────────────"
-
-  # 显示所有代理环境变量的值
-  # 使用 eval 进行间接变量引用，兼容 bash 和 zsh
-  local has_proxy=false
-  for var in "${_PROXY_ENV_VARS[@]}"; do
-    local val
-    eval "val=\${$var}"
-    if [ -n "$val" ]; then
-      echo "   $var = $val"
-      has_proxy=true
-    else
-      echo "   $var = （未设置）"
-    fi
-  done
-
-  echo "────────────────────────────────────"
-
-  if [ "$has_proxy" = true ]; then
-    echo "📡 代理状态：已开启"
-  else
-    echo "📡 代理状态：未开启（直连模式）"
-  fi
-
-  echo ""
-
-  # 检测 no_proxy 设置（排除代理的地址列表）
-  if [ -n "$no_proxy" ] || [ -n "$NO_PROXY" ]; then
-    echo "🚫 代理排除列表："
-    [ -n "$no_proxy" ] && echo "   no_proxy = $no_proxy"
-    [ -n "$NO_PROXY" ] && echo "   NO_PROXY = $NO_PROXY"
-    echo ""
-  fi
-
-  # 网络连通性快速检测
-  if command -v curl &>/dev/null; then
-    echo "🌐 网络连通性检测："
-
-    # 测试国内连通性（百度）
-    local domestic
-    domestic=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout "$_PROXY_TEST_TIMEOUT" https://www.baidu.com 2>/dev/null)
-    if [[ "$domestic" =~ ^[23] ]]; then
-      echo "   国内网络（百度）：✅ 可达（HTTP $domestic）"
-    else
-      echo "   国内网络（百度）：❌ 不可达"
-    fi
-
-    # 测试国际连通性（Google）
-    local international
-    international=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout "$_PROXY_TEST_TIMEOUT" https://www.google.com 2>/dev/null)
-    if [[ "$international" =~ ^[23] ]]; then
-      echo "   国际网络（Google）：✅ 可达（HTTP $international）"
-    else
-      echo "   国际网络（Google）：❌ 不可达"
-    fi
-  else
-    echo "⚠️  未安装 curl，无法检测网络连通性"
-  fi
+    echo "📋 当前代理配置:"
+    echo "   http_proxy  = ${http_proxy:-(未设置)}"
+    echo "   https_proxy = ${https_proxy:-(未设置)}"
+    echo "   all_proxy   = ${all_proxy:-(未设置)}"
+    echo "   no_proxy    = ${no_proxy:-(未设置)}"
 }
