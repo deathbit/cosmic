@@ -1,0 +1,8 @@
+[user]
+    name = Jian Zhang
+    email = deathbit007@gmail.com
+[alias]
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
