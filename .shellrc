@@ -8,6 +8,7 @@ alias ll='ls -al --color'
 # PROXY
 # ══════════════════════════════════════════════════════════════════════════════
 
+# Override ports with PROXY_HTTP_PORT_{MACOS|WINDOWS|DEFAULT} and PROXY_SOCKS_PORT_{MACOS|WINDOWS|DEFAULT}.
 proxy_http_port_default="7890"
 proxy_socks_port_default="1080"
 
