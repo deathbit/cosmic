@@ -9,30 +9,35 @@ alias ll='ls -al --color'
 # ══════════════════════════════════════════════════════════════════════════════
 
 proxy_get_system_type() {
+    proxy_system_type="default"
+
     case "${OSTYPE:-}" in
         darwin*)
-            printf '%s\n' "macos"
+            proxy_system_type="macos"
             ;;
         msys*|cygwin*|win32*|mingw*)
-            printf '%s\n' "windows"
+            proxy_system_type="windows"
             ;;
     esac
 
+    if [ "$proxy_system_type" != "default" ]; then
+        return
+    fi
+
     case "$(uname -s 2>/dev/null)" in
         Darwin)
-            printf '%s\n' "macos"
+            proxy_system_type="macos"
             ;;
         MSYS*|CYGWIN*|MINGW*)
-            printf '%s\n' "windows"
-            ;;
-        *)
-            printf '%s\n' "default"
+            proxy_system_type="windows"
             ;;
     esac
 }
 
 proxy_set_ports() {
-    case "$(proxy_get_system_type)" in
+    proxy_get_system_type
+
+    case "$proxy_system_type" in
         macos)
             proxy_http_port="${PROXY_HTTP_PORT_MACOS:-7890}"
             proxy_socks_port="${PROXY_SOCKS_PORT_MACOS:-1080}"
