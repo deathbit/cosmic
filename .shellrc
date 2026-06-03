@@ -13,6 +13,8 @@ proxy_http_port_default="7890"
 proxy_socks_port_default="1080"
 
 proxy_get_system_type() {
+    local proxy_system_name
+
     proxy_system_name="$(printf '%s' "${OSTYPE:-$(uname -s 2>/dev/null)}" | tr '[:upper:]' '[:lower:]')"
 
     case "$proxy_system_name" in
