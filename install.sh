@@ -11,12 +11,12 @@ BACKUP_DIR="$HOME_DIR/.dotfiles_backup/$(date +%Y%m%d_%H%M%S)"
 DOTFILES=(
     .bash_profile
     .bashrc
-    .gitconfig
+    .zprofile
+    .zshrc
     .shell_profile
     .shellrc
     .vimrc
-    .zprofile
-    .zshrc
+    .gitconfig
 )
 
 echo "Installing dotfiles from $SCRIPT_DIR to $HOME_DIR ..."
