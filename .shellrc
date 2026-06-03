@@ -12,8 +12,9 @@ alias ll='ls -al --color'
 proxy_http_port_default="7890"
 proxy_socks_port_default="1080"
 
-proxy_get_system_type() {
+proxy_set_ports() {
     local proxy_system_name
+    local proxy_system_type
 
     proxy_system_name="$(printf '%s' "${OSTYPE:-$(uname -s 2>/dev/null)}" | tr '[:upper:]' '[:lower:]')"
 
@@ -28,10 +29,6 @@ proxy_get_system_type() {
             proxy_system_type="default"
             ;;
     esac
-}
-
-proxy_set_ports() {
-    proxy_get_system_type
 
     case "$proxy_system_type" in
         macos)
