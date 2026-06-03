@@ -12,11 +12,11 @@ proxy_on() {
     local http_port socks5_port
 
     if [ "$(uname -s)" = "Darwin" ]; then
-        http_port=7890
-        socks5_port=1080
+        http_port=7892
+        socks5_port=7892
     else
-        http_port=10809
-        socks5_port=10808
+        http_port=4780
+        socks5_port=4781
     fi
 
     export http_proxy="http://127.0.0.1:${http_port}"
@@ -47,9 +47,7 @@ proxy_off() {
 }
 
 proxy_test() {
-    :
 }
 
 proxy_info() {
-    :
 }
