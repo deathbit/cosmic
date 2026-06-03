@@ -12,27 +12,15 @@ proxy_http_port_default="7890"
 proxy_socks_port_default="1080"
 
 proxy_get_system_type() {
-    proxy_system_type="default"
-
-    case "${OSTYPE:-}" in
-        darwin*)
+    case "${OSTYPE:-$(uname -s 2>/dev/null)}" in
+        darwin*|Darwin)
             proxy_system_type="macos"
             ;;
-        msys*|cygwin*|win32*|mingw*)
+        msys*|cygwin*|win32*|mingw*|MSYS*|CYGWIN*|MINGW*)
             proxy_system_type="windows"
             ;;
-    esac
-
-    if [ "$proxy_system_type" != "default" ]; then
-        return
-    fi
-
-    case "$(uname -s 2>/dev/null)" in
-        Darwin)
-            proxy_system_type="macos"
-            ;;
-        MSYS*|CYGWIN*|MINGW*)
-            proxy_system_type="windows"
+        *)
+            proxy_system_type="default"
             ;;
     esac
 }
