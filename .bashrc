@@ -1,1 +1,1 @@
- 
+[ -f "$HOME/.shellrc" ] && source "$HOME/.shellrc"
