@@ -1,50 +1,43 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# ALIAS
+# ══════════════════════════════════════════════════════════════════════════════
+
 alias ll='ls -al --color'
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Proxy - 代理开启/关闭/测试
+# PROXY
 # ══════════════════════════════════════════════════════════════════════════════
 
-# Proxy - 开启代理，支持 http/socks5，可选参数覆盖默认地址
 proxy_on() {
-    local addr="${1:-http://127.0.0.1:7890}"
-    export http_proxy="$addr" https_proxy="$addr" all_proxy="$addr"
-    export HTTP_PROXY="$addr" HTTPS_PROXY="$addr" ALL_PROXY="$addr"
-    echo "✅ 代理已开启: $addr"
+    export http_proxy="http://127.0.0.1:7890"
+    export https_proxy="http://127.0.0.1:7890"
+    export ftp_proxy="http://127.0.0.1:7890"
+    export all_proxy="socks5h://127.0.0.1:1080"
+    export no_proxy="localhost,127.0.0.1,::1"
+
+    export HTTP_PROXY="http://127.0.0.1:7890"
+    export HTTPS_PROXY="http://127.0.0.1:7890"
+    export FTP_PROXY="http://127.0.0.1:7890"
+    export ALL_PROXY="socks5h://127.0.0.1:1080"
+    export NO_PROXY="localhost,127.0.0.1,::1"
 }
 
-# Proxy - 开启 socks5 代理
-proxy_socks5() {
-    proxy_on "${1:-socks5://127.0.0.1:7890}"
-}
-
-# Proxy - 关闭代理
 proxy_off() {
-    unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
-    echo "❌ 代理已关闭"
+    unset http_proxy
+    unset https_proxy
+    unset ftp_proxy
+    unset all_proxy
+    unset no_proxy
+
+    unset HTTP_PROXY
+    unset HTTPS_PROXY
+    unset FTP_PROXY
+    unset ALL_PROXY
+    unset NO_PROXY
 }
 
-# Proxy - 设置不走代理的地址
-proxy_noproxy() {
-    local list="${1:-localhost,127.0.0.1,::1,10.*,192.168.*}"
-    export no_proxy="$list" NO_PROXY="$list"
-    echo "🚫 不走代理: $list"
-}
-
-# Proxy - 测试连通性
 proxy_test() {
-    local target="${1:-https://www.google.com}"
-    local result
-    result=$(curl -s -o /dev/null -w "%{http_code} %{time_total}s" --connect-timeout 5 "$target" 2>/dev/null)
-    local rc=$?
-    if [ $rc -eq 0 ]; then echo "✅ $target -> $result"
-    else echo "❌ $target -> 连接失败"; return 1; fi
 }
 
-# Proxy - 查看当前代理配置
 proxy_info() {
-    echo "📋 当前代理配置:"
-    echo "   http_proxy  = ${http_proxy:-(未设置)}"
-    echo "   https_proxy = ${https_proxy:-(未设置)}"
-    echo "   all_proxy   = ${all_proxy:-(未设置)}"
-    echo "   no_proxy    = ${no_proxy:-(未设置)}"
 }
