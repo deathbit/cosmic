@@ -8,7 +8,14 @@ alias ll='ls -al --color'
 # PROXY
 # ══════════════════════════════════════════════════════════════════════════════
 
+proxy_http_port_default="7890"
+proxy_socks_port_default="1080"
+
 proxy_get_system_type() {
+    if [ -n "${proxy_system_type:-}" ]; then
+        return
+    fi
+
     proxy_system_type="default"
 
     case "${OSTYPE:-}" in
@@ -39,16 +46,16 @@ proxy_set_ports() {
 
     case "$proxy_system_type" in
         macos)
-            proxy_http_port="${PROXY_HTTP_PORT_MACOS:-7890}"
-            proxy_socks_port="${PROXY_SOCKS_PORT_MACOS:-1080}"
+            proxy_http_port="${PROXY_HTTP_PORT_MACOS:-$proxy_http_port_default}"
+            proxy_socks_port="${PROXY_SOCKS_PORT_MACOS:-$proxy_socks_port_default}"
             ;;
         windows)
-            proxy_http_port="${PROXY_HTTP_PORT_WINDOWS:-7890}"
-            proxy_socks_port="${PROXY_SOCKS_PORT_WINDOWS:-1080}"
+            proxy_http_port="${PROXY_HTTP_PORT_WINDOWS:-$proxy_http_port_default}"
+            proxy_socks_port="${PROXY_SOCKS_PORT_WINDOWS:-$proxy_socks_port_default}"
             ;;
         *)
-            proxy_http_port="${PROXY_HTTP_PORT_DEFAULT:-7890}"
-            proxy_socks_port="${PROXY_SOCKS_PORT_DEFAULT:-1080}"
+            proxy_http_port="${PROXY_HTTP_PORT_DEFAULT:-$proxy_http_port_default}"
+            proxy_socks_port="${PROXY_SOCKS_PORT_DEFAULT:-$proxy_socks_port_default}"
             ;;
     esac
 }
