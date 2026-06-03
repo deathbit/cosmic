@@ -12,10 +12,6 @@ proxy_http_port_default="7890"
 proxy_socks_port_default="1080"
 
 proxy_get_system_type() {
-    if [ -n "${proxy_system_type:-}" ]; then
-        return
-    fi
-
     proxy_system_type="default"
 
     case "${OSTYPE:-}" in
